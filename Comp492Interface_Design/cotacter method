@@ -1,0 +1,50 @@
+/*
+			choice2=iOyuncuIndex==1 ? 1: 2;
+			if(choice2==1) 
+			{
+				//soldakini alirsa
+				//soldakilerden en ustteki sýrayý goster			
+				System.out.println("Get dropped");
+				
+				for(iTasIndex = oncekioyuncu_droptaslar.size()-1;iTasIndex>=0;iTasIndex--) {
+					//istaka taslarina en ust soldaki sýrayý ekle
+					oyuncu_taslar.add(oncekioyuncu_droptaslar.get(iTasIndex));
+					//soldakilerden en ustteki sýrayý sil
+					//HOCAM EKRANDAN TAS KALDIRMAYI BURADA YAPTIM
+					root.getChildren().remove(oncekioyuncu_droptaslar.get(iTasIndex).getTxt());
+					
+					//oncekioyuncu_droptaslar.remove(iTasIndex);
+					//if(oncekioyuncu_droptaslar.size()%3==0)
+						//break;
+					
+					 // iOyuncu index= Hangi alana tas birakilacak ona bakiyorum bu methodun icinde bir method daha var
+					 // iTasindex=hangi tasýn hangi kareye birakilacagina bakiyorum== atýlanlar= 3 5 7  1.kareye "3" 2.kare "5" 3.kare "7"
+					 
+					istakalar.get(iOncekiOyuncuIndex).SagUsttekiTaslariGoster(iOyuncuIndex,iTasIndex,root);
+				}
+				
+				//Cekilen 3 tas oyuncu_taslar arrayListe eklendikten sonra atilacak 3 tane tas buluyorum
+				// bunlarýda oyuncu_droptaslara ekliyorum.
+				
+				
+				
+				//soldakilerden en ustteki sýrayý goster
+				
+				//BU KISMIDA HALLETTIM
+			}
+			else
+			{
+				//ortadakini alirsa
+				System.out.println("Get new one");
+				for(int a=0; a<3; a++) {
+					oyuncu_taslar.add(taslar.get(0));
+					
+					taslar.remove(0);
+					
+				}
+			
+				
+				
+				//return;
+				
+			}*/

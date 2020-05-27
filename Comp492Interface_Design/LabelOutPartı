@@ -1,0 +1,1055 @@
+import java.util.ArrayList;
+import java.util.Random;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
+
+public class Game {
+	int tur=0;
+	double recx, recy;
+	double en,boy;
+	ArrayList<Stone> taslar = new ArrayList<Stone>();
+	ArrayList<Stone> dropped=new ArrayList<Stone>();
+	ArrayList<Wood> istakalar = new ArrayList<Wood>();
+
+	Wood wood;
+	boolean OncekiPlayerchoice=true;
+	Group root;
+	Button btn;
+	Button nextPlayer;
+	Button getNew;
+	Button getSide;
+	Button finish;
+	Random rnd= new Random();
+
+	public void Initialize(Stage primaryStage)
+	{
+
+		double xcor=30.0f;
+		double ycor=10.0f;
+		double slide=71.0f;
+		double Width= 40.0f;
+		double Height= 50.0f;
+		root = new Group();
+		//wood.DrawDropPlaces(root);
+		Color Brown=Color.BURLYWOOD;
+		Color Black= Color.BLACK;
+		double recx=230;
+		double recy=700;
+		double en=1200;
+		double boy=200;
+
+
+		Line MidLine=new Line(recx,(recy+boy/2)+50,recx+en,(recy+boy/2)+50);
+		//Woods Of the game;
+
+		TaslariKaristir();
+
+		wood = new Wood(1,recx,recy+50,en,boy,Brown,root,taslar);
+		istakalar.add(wood);
+		wood = new Wood(2,recx+1250,recy-610,boy-50, en-500,Brown,root,taslar);
+		istakalar.add(wood);
+		wood = new Wood(3,recx,recy-650,en,boy,Brown,root,taslar);
+		istakalar.add(wood);
+		wood = new Wood(4,recx-200,recy-610,boy-50, en-500,Brown,root,taslar);
+		istakalar.add(wood);
+		//Limits of the lines
+
+		Rectangle Limited3= new Rectangle(recx+160, 540, 300, 140);
+
+		root.getChildren().add(MidLine);
+
+		//System.out.println(yeni.taslar.toString());
+		//taslari meydana cikartma
+		/*for(int y=0; y<taslar.size(); y++) {
+			root.getChildren().add(taslar.get(y).getTxt());
+			}*/
+		//linner= new Linedary(recx,(recy+boy/2)+30,recx+en,(recy+boy/2)+30,root);
+
+		//BUTTON EKLEME
+		btn = new Button("Let's Start");
+		btn.setOnAction(event);
+		btn.setLayoutX(750);
+		btn.setLayoutY(350);
+		btn.setPrefWidth(100);
+		btn.setPrefHeight(100);
+		root.getChildren().add(btn);
+
+		primaryStage.setResizable(false);
+		primaryStage.setScene(new Scene(root, 1700,1000, Color.CHARTREUSE));
+
+		primaryStage.setTitle("This Game real Name is= 183 game");
+		primaryStage.show();
+	}
+
+	private void TaslariKaristir()
+	{
+		Color green=Color.GREEN;
+		Color blue=Color.BLUE;
+		Color yellow=Color.GOLD;
+		Color red=Color.RED;
+		Color black=Color.BLACK;
+		Paint gray=Color.DARKGRAY;
+		Paint white=Color.WHITE;
+		ArrayList<Stone> duztaslar = new ArrayList<Stone>();
+		for(int a=1; a<107; a++) {
+			Stone yeni= new Stone();
+			if(a%13==0) {
+				yeni.setValue(13);
+			}else if(a/13==8 && a%13!=0) {
+				yeni.setValue(0);
+				yeni.setColor(black);
+			}else {
+				yeni.setValue(a%13);
+			}
+
+			if(a>=1 && a<=26){
+				yeni.setColor(red);
+			}else if(a>=27 && a<=52){
+				yeni.setColor(yellow);
+			}else if(a>=53 && a<=79){
+				yeni.setColor(green);
+			}else if(a>=80 && a<=104){
+				yeni.setColor(blue); 
+			}
+			yeni.setTxt(yeni.getTxt());
+			yeni.setId(a);
+
+			yeni.getTxt().setOnMousePressed(labelpress);
+			yeni.getTxt().setOnMouseDragged(labeldragg);
+			yeni.getTxt().setOnMouseReleased(labelout);
+			duztaslar.add(yeni);
+		}
+
+		int iStoneIndex=0;
+		for(int a=1; a<107; a++) {
+			iStoneIndex= rnd.nextInt(duztaslar.size());
+			this.taslar.add(duztaslar.get(iStoneIndex));
+			duztaslar.remove(iStoneIndex);
+		}
+	}
+
+
+	double offsetX, offsetY, orgSceneX, orgSceneY, prspointX, prspointY,wayX,wayY,shortest;
+	double newTranslateX, newTranslateY, orgTranslateX, orgTranslateY,msf,pstX,pstY,FirstX,FirstY;
+	double prvX, prvY;
+	Stone Closest;
+	Line prevLine;
+	//	int bfr=0;
+	int placePress=0;
+	int placeOut=0;
+	int counting=0;
+
+	EventHandler<MouseEvent> labelpress =
+			new EventHandler<MouseEvent>() {
+
+		@Override
+		public void handle(MouseEvent t) {
+			MouseButton button = t.getButton();
+			if(button!=MouseButton.PRIMARY)
+			{
+				t.consume();
+				return;
+			}
+			//tahtadan alýnan sadece Sað veya ortadan baþka bir yere koyulamaz TAMAMLANDI
+			//Ortaya atýlan taþlarda hareket ettirilemez TAMAMLANDI
+
+			//sað tarafa atýlan  taþ sabit kalýr TAMAMLANDI
+			//Soldan alýnan taþ sadece tahtaya konulabilir
+			orgSceneX = t.getSceneX();
+			orgSceneY = t.getSceneY();
+			placePress= istakalar.get(0).WhereIsTaken(orgSceneX, orgSceneY);
+
+
+
+			System.out.println("position= "+placePress);
+			if(placePress==2 || placePress==3) {
+				if(button==MouseButton.PRIMARY)
+				{
+					t.consume();
+					return;
+				}
+			}
+			FirstX=orgSceneX;
+			FirstY=orgSceneY;
+			orgTranslateX = ((Text)(t.getSource())).getTranslateX();
+			orgTranslateY = ((Text)(t.getSource())).getTranslateY();
+			//System.out.println(orgSceneX+" "+orgSceneY);
+
+			Closest = istakalar.get(0).FindClosest(orgSceneX, orgSceneY);
+			//System.out.println(Closest.getTxt());
+			//prevLine=istakalar.get(0).GetInitialLine(Closest);
+			//System.out.println("Closest Line is="+ prevLine.getId());
+			//System.out.println(Closest.getXsutun() + ":" + Closest.getYsatir());
+		}
+	};
+	EventHandler<MouseEvent> labeldragg =
+			new EventHandler<MouseEvent>() {
+
+		@Override
+		public void handle(MouseEvent t) {
+			MouseButton button = t.getButton();
+			if(button!=MouseButton.PRIMARY)
+			{
+				t.consume();
+				return;
+			}
+			if(placePress==2 || placePress==3) {
+				if(button==MouseButton.PRIMARY)
+				{
+					t.consume();
+					return;
+				}
+			}
+			offsetX = t.getSceneX() - orgSceneX;
+			offsetY = t.getSceneY() - orgSceneY;
+			newTranslateX = orgTranslateX + offsetX;
+			newTranslateY = orgTranslateY + offsetY;
+
+			((Text)(t.getSource())).setTranslateX(newTranslateX);
+			((Text)(t.getSource())).setTranslateY(newTranslateY);
+
+		}
+	};
+
+	EventHandler<MouseEvent> labelout =
+			new EventHandler<MouseEvent>() {
+
+		@Override
+		public void handle(MouseEvent t) {
+
+			prspointX=t.getSceneX();
+			prspointY=t.getSceneY();
+			double ne=5;
+			System.out.println("You dropped::::::");
+
+
+			int shrt = 0;
+
+			double shortest=999999;
+			msf=0;
+			MouseButton button = t.getButton();
+			if(button==MouseButton.PRIMARY){
+				//place= istakalar.get(0).WhereIsTaken(prspointX, prspointY);
+
+
+
+				//int bfr=0;
+				System.out.println("You clicked: "+prspointX+" "+prspointY);
+
+				//System.out.println(Closest.getXsutun() + ":" + Closest.getYsatir());
+				System.out.println(Closest.getTxt());
+				int Result=istakalar.get(0).TasSurukleBirakKontrol(prspointX, prspointY, Closest);
+				if(Result==1) {
+					System.out.println("Dropped stones are:");
+					/*for(int a=0; a<istakalar.get(0).droptaslar.size(); a++) {
+						System.out.println(istakalar.get(0).droptaslar.get(a).getTxt());
+
+					}*/
+
+					System.out.println("NextPlayer Time");
+					nextPlayer=new Button("Next player");
+
+					nextPlayer.setOnAction(destro);
+					nextPlayer.setLayoutX(730);
+					nextPlayer.setLayoutY(300);
+					nextPlayer.setPrefWidth(200);
+					nextPlayer.setPrefHeight(100);
+					root.getChildren().add(nextPlayer);
+				}else if(Result==2) {
+					istakalar.get(0).FinStonesPrev.add(Closest);
+					System.out.println("Controller time");
+					finish=new Button("Killer");
+					finish.setOnAction(Combiner);
+					finish.setLayoutX(750);
+					finish.setLayoutY(350);
+					finish.setPrefWidth(100);
+					finish.setPrefHeight(100);
+					root.getChildren().add(finish);
+				}
+
+			}
+		}
+	};
+	//Starting game button
+	EventHandler<ActionEvent> event = new EventHandler<ActionEvent>() {
+		public void handle(ActionEvent e)
+		{
+			root.getChildren().remove(btn);
+
+			istakalar.get(0).StartWood(root);
+		}
+	};
+
+	public boolean OyunBittiMi(int iPlayerIndex)
+	{
+		boolean Sonuc=false;
+
+
+		return Sonuc;
+
+	}
+	EventHandler<ActionEvent> Combiner = new EventHandler<ActionEvent>() {
+		public void handle(ActionEvent e)
+		{
+			/*for(Stone a: istakalar.get(0).taslar) {
+				System.out.println(a.getTxt());
+			}*/
+			istakalar.get(0).ControlFinalPosition();
+		}
+	};
+
+	//Next Player Button
+	EventHandler<ActionEvent> destro = new EventHandler<ActionEvent>() {
+		public void handle(ActionEvent e)
+		{
+			root.getChildren().remove(nextPlayer);
+
+			//if(!OyunBittiMi(0))
+			cotacter(1);
+			//if(!OyunBittiMi(1))
+			cotacter(2);
+
+			//if(!OyunBittiMi(2))
+			cotacter(3);
+
+			//if(OyunBittiMi(3))
+			//{
+			//alert oyun bitti
+
+			//}
+			//wood.SagUsttekiTaslariGoster(root);
+			//fill_Box=0;
+			tur++;
+			//SIRA TUR DONGUSUNDE
+			//Sira bendeyken yerden mi yoksa atilan mi?
+			if(tur>0) {
+				getSide= new Button("get Dropped one");
+				getSide.setOnAction(getter);
+				getSide.setLayoutX(600);
+				getSide.setLayoutY(300);
+				getSide.setPrefWidth(200);
+				getSide.setPrefHeight(100);
+				root.getChildren().add(getSide);
+				getNew= new Button("get New ones");
+				getNew.setOnAction(newer);
+				getNew.setLayoutX(830);
+				getNew.setLayoutY(300);
+				getNew.setPrefWidth(200);
+				getNew.setPrefHeight(100);
+				root.getChildren().add(getNew);
+				//mediaPlayer_6.stop();
+				//mediaPlayer_6.play();
+			}
+
+
+
+		}
+
+
+	};
+	private void cotacter(int iOyuncuIndex) {
+		int choice2= rnd.nextInt(2)+1;
+		int iTasIndex=0,iOncekiOyuncuIndex;
+
+		iOncekiOyuncuIndex = iOyuncuIndex==0 ? 3 : iOyuncuIndex-1;
+		System.out.println(iOncekiOyuncuIndex);
+		ArrayList<Stone> oncekioyuncu_droptaslar = istakalar.get(iOncekiOyuncuIndex).droptaslar;
+		ArrayList<Stone> oyuncu_droptaslar = istakalar.get(iOyuncuIndex).droptaslar;
+		ArrayList<Stone> oyuncu_taslar = istakalar.get(iOyuncuIndex).taslar;
+		choice2=2;
+		if(choice2==1) {
+
+			for(iTasIndex = oncekioyuncu_droptaslar.size()-1;iTasIndex>=0;iTasIndex--) {
+				oyuncu_taslar.add(oncekioyuncu_droptaslar.get(iTasIndex));
+				root.getChildren().remove(oncekioyuncu_droptaslar.get(iTasIndex).getTxt());
+
+			}
+
+		}else {
+			//ortadan tas cektim
+			for(int a=0; a<3; a++) {
+				//System.out.println(a);
+				oyuncu_taslar.add(taslar.get(0));
+				taslar.remove(0);
+				//GetDroppedThreeStones(oyuncu_taslar,oyuncu_droptaslar);
+			}
+		}		
+
+		GetDroppedThreeStones(oyuncu_taslar,oyuncu_droptaslar);
+
+		//Atilacak 3 tane tasi belirledim
+		for(iTasIndex = oncekioyuncu_droptaslar.size()-1;iTasIndex>=0;iTasIndex--) {
+			istakalar.get(iOyuncuIndex).DroppedStone_Place(iTasIndex, iOyuncuIndex,  root);
+		}
+	}
+
+
+	private void GetDroppedThreeStones(ArrayList<Stone> oyuncu_taslar, ArrayList<Stone> oyuncu_droptaslar) {
+
+		for(int a=0; a<3; a++) {
+			int sayi=rnd.nextInt(oyuncu_taslar.size()-3);	
+			oyuncu_droptaslar.add(oyuncu_taslar.get(sayi));
+			oyuncu_taslar.remove(sayi);
+		}
+
+	}
+	EventHandler<ActionEvent> getter = new EventHandler<ActionEvent>() {
+		public void handle(ActionEvent e)
+		{
+			root.getChildren().removeAll(getSide, getNew);
+			for(int a=0; a<3; a++) {
+				istakalar.get(0).taslar.add(istakalar.get(3).droptaslar.get(a));
+				istakalar.get(0).PutIt(1, a, istakalar.get(3).droptaslar.get(a), root);
+			}
+
+
+		}
+	};
+	EventHandler<ActionEvent> newer = new EventHandler<ActionEvent>() {
+		public void handle(ActionEvent e)
+		{
+			for(int a=0; a<3; a++) {
+				istakalar.get(0).taslar.add(taslar.get(0));
+				istakalar.get(0).PutIt(0, a, taslar.get(0), root);
+				taslar.remove(0);
+			}
+			root.getChildren().removeAll(getSide, getNew);
+		}
+	};
+}
+______________________________________________________________Game
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Random;
+
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Group;
+import javafx.scene.control.Button;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
+
+public class Wood  {
+	Random rnd= new Random();
+	ArrayList<Stone> taslar = new ArrayList<Stone>();
+	ArrayList<Stone> droptaslar =new ArrayList<Stone>();
+	ArrayList<Stone> FinStones = new ArrayList<Stone>();
+	ArrayList<Stone> FinStonesPrev =new ArrayList<Stone>();
+	ArrayList<Line> woodliner= new ArrayList<Line>();
+	ArrayList<Rectangle> DropP1 = new ArrayList<Rectangle>();
+	ArrayList<Rectangle> DropP2 = new ArrayList<Rectangle>();
+	ArrayList<Rectangle> DropP3 = new ArrayList<Rectangle>();
+	ArrayList<Rectangle> DropP4 = new ArrayList<Rectangle>();
+
+	ArrayList<Rectangle> oyunbitir = new ArrayList<Rectangle>();
+	int single=0;
+	double CorX,CorY,En,Boy,recx;
+	private int OyuncuID;
+	private Color color;
+	public int getOyuncuID() {
+		return OyuncuID;
+	}
+	public void setOyuncuID(int oyuncuID) {
+		OyuncuID = oyuncuID;
+	}
+	public void setcolor(Color color) {
+		this.color = color;
+	}
+	public Color getColor() {
+		return color;
+	}
+
+	public Wood(int oyuncuID,double _CorX,double _CorY,double _En,double _Boy,Color _color,Group root,ArrayList<Stone> taslar
+			) {
+		this.OyuncuID = oyuncuID;
+		this.CorX=_CorX;
+		this.CorY=_CorY;
+		this.En=_En;
+		this.Boy=_Boy;
+		this.color=_color;
+		Initialize(oyuncuID,color,taslar, root);
+
+	}
+
+	public void Initialize(int OyuncuID, Color color,ArrayList<Stone> taslar, Group root)
+	{
+
+		Color black=Color.BLACK;
+		Rectangle rectangle= new Rectangle(CorX, CorY, En, Boy);
+		rectangle.setFill(color);
+		rectangle.setStroke(black);
+		root.getChildren().add(rectangle);
+
+		//woodlinelari ciz
+
+		//DrawLimits(root);
+
+		//Eger bu kýsým olmazsa herseyden 4 tane basýyor gözükmüyor iþlemler
+		if(OyuncuID==1) {
+			Drawwoodlines(root);
+		}
+
+		DrawDropPlaces(root);
+		IlkTaslariYukle(taslar,root);
+		/* bu kisimda ekleme oluyor ama taslarin içi boyanmýyor birde boyle bakarsýn
+		 * if(single==0){
+		 * DrawDropPlaces(root);
+		 * }
+		 * */
+	}
+
+	public void StartWood(Group root)
+	{
+
+		Stone stone;
+		for(int i=0; i<this.taslar.size(); i++) {
+			stone = this.taslar.get(i);
+			//stone.line.setStroke(Color.RED);
+			root.getChildren().add(stone.getTxt());
+			woodliner.get(i).setStroke(Color.RED);
+
+			//System.out.println(woodliner.get(i));
+			//woodliner.get(i).setFill(Color.RED);
+
+		}
+	}
+
+	private void IlkTaslariYukle(ArrayList<Stone> taslar, Group root)
+	{
+		int iTasSayisi =0;
+		double xcor=CorX + 30 ;
+		double ycor=CorY + 60;
+		Stone stone;
+		iTasSayisi = this.OyuncuID==1 ? 20 : 17;
+		//System.out.println("Line Output");
+		for(int i=0; i<iTasSayisi; i++) {
+			this.taslar.add(taslar.get(0));
+			taslar.remove(0);
+
+			if(this.OyuncuID==1)
+			{
+				stone = this.taslar.get(this.taslar.size()-1);
+				if(this.taslar.size()%16==0 && this.taslar.size()/16>0) {
+					xcor=CorX + 30;
+					ycor+=100;
+				}else if (this.taslar.size()>1){
+					xcor+= 80;
+				}
+
+				stone.setXsutun(xcor-(stone.getValue()>9 ? 10 : 0));
+				stone.setYsatir(ycor);
+
+
+				stone.line = this.woodliner.get(this.taslar.size()-1);
+
+
+
+			}
+		}
+	}
+
+	private void Drawwoodlines(Group root)
+	{
+		double recx=230;
+		double recy=720;
+		Line woodline;
+		for(int l=1; l<31; l++) {
+
+
+			woodline= new Line();
+			if(l!=1 && l%3==1) {
+				//woodline.setFill(Color.BLACK);
+				//woodline.setFill(Color.YELLOW);
+
+			}
+			//1.woodline
+			if(l%16==0 && l/16!=0) {
+				recx=230;
+				recy+=100;
+				woodline.setStartX(recx);
+				woodline.setStartY(recy+30);
+				woodline.setEndX(recx);
+				woodline.setEndY(recy+130);
+
+			}else {
+				woodline.setStartX(recx);
+				woodline.setStartY(recy+30);
+				woodline.setEndX(recx);
+				woodline.setEndY(recy+130);
+			}
+			int id=l;
+			woodline.setId(Integer.toString(id));
+			//woodline.setStrokeWidth(3.0f);
+			//woodline.setStroke(Color.RED);
+			woodliner.add(woodline);
+			root.getChildren().add(woodline);
+			recx+=80;
+		}
+
+	}
+
+	private void DrawLimits(Group root) {
+		Rectangle Limited1= new Rectangle(200, 720, 1260, 260);
+		Limited1.setStroke(Color.BLACK);
+		Limited1.setFill(null);
+		root.getChildren().add(Limited1);
+		Rectangle Limited2= new Rectangle(1110, 540, 300, 140);
+		Limited2.setStroke(Color.BLACK);
+		Limited2.setFill(null);
+		root.getChildren().add(Limited2);
+		Rectangle Limited3= new Rectangle(640, 540, 300, 140);
+		Limited3.setFill(null);
+		Limited3.setStroke(Color.BLACK);
+		root.getChildren().add(Limited3);
+	}
+
+
+	public void DrawDropPlaces(Group root) {
+		//p3 number dropped
+		recx=230;
+		for(int c=1; c<=3; c++ ) {
+			Rectangle P3_Stones =new Rectangle(recx, 260,80, 100);
+			P3_Stones.setFill(Color.GHOSTWHITE);
+			DropP3.add(P3_Stones);
+			recx+=90;
+			root.getChildren().add(P3_Stones);
+		}
+		recx=230;
+		//p4 number dropped
+		for(int c=1; c<=3; c++ ) {
+			Rectangle P4_Stones =new Rectangle(recx, 560,80, 100);
+			P4_Stones.setFill(Color.GHOSTWHITE);
+			DropP4.add(P4_Stones);
+
+			recx+=90;
+			root.getChildren().add(P4_Stones);
+		}
+		recx=230;
+		//p1 number dropped
+
+		for(int c=1; c<=3; c++ ) {
+			Rectangle P1_Stones =new Rectangle(recx+900, 560,80, 100);
+			P1_Stones.setFill(Color.GHOSTWHITE);
+			//P1_Drop.add(P1_Stones);
+			recx+=90;
+			DropP1.add(P1_Stones);
+			root.getChildren().add(P1_Stones);
+		}
+		recx=230;
+		//p2 number dropped
+		for(int c=1; c<=3; c++ ) {
+			Rectangle P2_Stones =new Rectangle(recx+900, 260,80, 100);
+			P2_Stones.setFill(Color.GHOSTWHITE);
+			DropP2.add(P2_Stones);
+			recx+=90;
+
+			root.getChildren().add(P2_Stones);
+		}
+		//Final number adding
+		for(int c=1; c<=3; c++) {
+			Rectangle Fin_Stones =new Rectangle(recx+160, 560,80, 100);
+			Fin_Stones.setFill(Color.GHOSTWHITE);
+			oyunbitir.add(Fin_Stones);
+			//FinDrp.add(Fin_Stones);
+
+			recx+=90;
+			root.getChildren().add(Fin_Stones);
+		}
+
+	}
+	int counterSag=0;
+	int counterFin=0;
+	public int TasSurukleBirakKontrol(double PointX, double PointY,Stone stone)
+	{	
+
+		int buttonOption=0;
+		int iStatusID=0;
+
+		/* 0 eski yerine koy
+		 * 1 line a yerlestir
+		 * 2 sagdakine koy
+		 * 3 ortaya koy
+		 */
+		Rectangle dropping;
+		int iLineWidth=80,iLineHeight=100;
+		double sagTarafXbas=DropP1.get(0).getX(),sagTarafYbas=DropP1.get(0).getY();
+		double bitirmeTarafXbas=oyunbitir.get(0).getX(),bitirmeTarafYbas=oyunbitir.get(0).getY();
+		Line CurrentLine=null;
+		boolean bIsInWood=false;
+		//double StartX=this.CorX;
+		//double StartY=this.CorY;
+		//double FinX=StartX+this.En;
+		//double FinY=StartY+this.Boy;
+
+		if((PointX > this.CorX) 
+				&& (PointX < this.CorX + this.En)
+				&& (PointY > this.CorY) 
+				&& (PointY < this.CorY + this.Boy)
+
+				)
+		{
+			System.out.println("You are in the wood");
+			bIsInWood=true;
+		}
+		else if(
+				(PointX > sagTarafXbas) 
+				&& (PointX < sagTarafXbas+260)
+				&& (PointY > sagTarafYbas) 
+				&& (PointY < sagTarafYbas+100)
+				) {
+			iStatusID=2;
+			System.out.println("You are the right side");
+		}else if((PointX > bitirmeTarafXbas) 
+				&& (PointX < bitirmeTarafXbas+260)
+				&& (PointY > bitirmeTarafYbas) 
+				&& (PointY < bitirmeTarafYbas+100)) {
+			System.out.println("You are the middle side");
+			iStatusID=3;
+		}
+		else {
+			System.out.println("You are Outside");
+			iStatusID=0;
+		}
+
+		if(bIsInWood)
+		{
+			//hangi line icinde
+			for(Line line: woodliner) {
+				if(PointX>=line.getStartX()
+						&& PointX<line.getStartX()+iLineWidth
+						&& PointY>=line.getStartY()
+						&& PointY<line.getStartY()+iLineHeight){
+
+					CurrentLine = line;
+					if(line.getStroke().equals(Color.RED)) {
+						iStatusID = 0;
+						System.out.println("busy");
+					}else {
+						iStatusID = 1;
+						System.out.println("Empty");
+						break;
+					}
+				}
+			}
+		}
+
+
+		switch(iStatusID)
+		{
+		case 0:
+			stone.setXsutun(stone.getXsutun());
+			stone.setYsatir(stone.getYsatir());
+			break;
+		case 1:
+			stone.line.setStroke(Color.BLACK);
+			CurrentLine.setStroke(Color.RED);
+			if(stone.getValue()>=10) 
+			{
+				stone.setXsutun(CurrentLine.getStartX()+ 25);
+				stone.setYsatir(CurrentLine.getStartY()+ 60);
+			}else {
+				stone.setXsutun(CurrentLine.getStartX()+ 30);
+				stone.setYsatir(CurrentLine.getStartY()+ 60);
+			}
+			stone.line=CurrentLine;
+
+			break;
+		case 2:
+			counterSag++;
+			//Drop.
+			// 2 sagdakine koy
+			stone.line.setStroke(Color.BLACK);
+			for(int ln=0; ln<DropP1.size(); ln++) {
+				double wayX=PointX-DropP1.get(ln).getX();
+				double wayY=PointY-DropP1.get(ln).getY();
+				double msf= Math.sqrt(Math.pow(wayX, 2) + Math.pow(wayY, 2));
+				if((wayX>=0 && wayX<=80) && (wayY>=0 && wayY<=100)) {
+					//	droping=Drop.get(ln);
+					//double pstX=Drop.get(ln).getX()-newTranslateX;
+					//double pstY=Drop.get(ln).getY()-newTranslateY;
+					if(DropP1.get(ln).getFill().equals(Color.GRAY)) {
+						stone.setXsutun(stone.getXsutun());
+						stone.setYsatir(stone.getYsatir());
+						stone.line.setStroke(Color.RED);
+					}else {
+						if(stone.getValue()>=10) {
+							stone.setXsutun(DropP1.get(ln).getX()+ 25);
+							stone.setYsatir(DropP1.get(ln).getY()+ 60);
+						}else {
+							stone.setXsutun(DropP1.get(ln).getX()+ 30);
+							stone.setYsatir(DropP1.get(ln).getY()+ 60);
+						}
+						DropP1.get(ln).setFill(Color.GRAY);
+					}
+				}
+			}
+			droptaslar.add(stone);
+			if(counterSag==3) {
+				System.out.println("Saga tas attin 3 tane");
+				for(int a=0; a<droptaslar.size(); a++) {
+					System.out.println(droptaslar.get(a).getTxt());
+					System.out.println(DropP2.get(a));
+				}
+				buttonOption=1;
+
+
+			}
+			break;
+		case 3:
+			counterFin++;
+			stone.line.setStroke(Color.BLACK);
+			Rectangle droping;
+			for(int ln=0; ln<oyunbitir.size(); ln++) {
+				double wayX=PointX-oyunbitir.get(ln).getX();
+				double wayY=PointY-oyunbitir.get(ln).getY();
+				double msf= Math.sqrt(Math.pow(wayX, 2) + Math.pow(wayY, 2));
+				if((wayX>=0 && wayX<=80) && (wayY>=0 && wayY<=100)) {
+					droping=oyunbitir.get(ln);
+					//double pstX=Drop.get(ln).getX()-newTranslateX;
+					//double pstY=Drop.get(ln).getY()-newTranslateY;
+					if(oyunbitir.get(ln).getFill().equals(Color.GRAY)) {
+						stone.setXsutun(stone.getXsutun());
+						stone.setYsatir(stone.getYsatir());
+						stone.line.setStroke(Color.RED);
+					}else {
+						if(stone.getValue()>=10) {
+						stone.setXsutun(oyunbitir.get(ln).getX()+ 25);
+						stone.setYsatir(oyunbitir.get(ln).getY()+ 60);
+						}else {
+						stone.setXsutun(oyunbitir.get(ln).getX()+ 30);
+						stone.setYsatir(oyunbitir.get(ln).getY()+ 60);
+						}
+						oyunbitir.get(ln).setFill(Color.GRAY);
+					}
+				}
+			}
+			FinStones.add(stone);
+			taslar.remove(stone);
+			if(counterFin==3) {
+				counterFin=0;
+				System.out.println("You put 3 stone to the corner");
+				buttonOption=2;
+			}
+			//3 ortaya koy
+
+			break;
+		default:
+			System.out.println("I don't know");
+
+		}
+		stone.getTxt().setTranslateX(0);
+		stone.getTxt().setTranslateY(0);
+
+		return buttonOption;
+	}
+	public Stone FindClosest(double X, double Y) {
+		double diff=9999;
+		int av=0;
+		for(int a=0; a<taslar.size(); a++) {
+			double DistX=X-taslar.get(a).getXsutun();
+			double DistY=Math.abs(Y-taslar.get(a).getYsatir());
+			double dist=Math.sqrt(Math.pow(DistX, 2)+ Math.pow(DistY, 2));
+			if(dist<diff) {
+				av=a;
+				diff=dist;
+			}
+		}
+		return taslar.get(av);
+
+	}
+	public void DropTasAl()
+	{
+
+	}
+	public int WhereIsTaken(double PointX, double PointY) {
+		double sagTarafXbas=DropP1.get(0).getX(),sagTarafYbas=DropP1.get(0).getY();
+		double bitirmeTarafXbas=oyunbitir.get(0).getX(),bitirmeTarafYbas=oyunbitir.get(0).getY();
+		int position=0;
+		if((PointX > this.CorX) 
+				&& (PointX < this.CorX + this.En)
+				&& (PointY > this.CorY) 
+				&& (PointY < this.CorY + this.Boy)
+
+				)
+		{
+			position=1;
+			System.out.println("You are in the wood");
+			//System.out.println("Limit X between "+this.CorX+" and "+this.CorX + this.En);
+			//System.out.println("Limit Y between "+this.CorY+" and "+this.CorY + this.Boy);
+
+		}
+		else if(
+				(PointX > sagTarafXbas) 
+				&& (PointX < sagTarafXbas+260)
+				&& (PointY > sagTarafYbas) 
+				&& (PointY < sagTarafYbas+100)
+				) {
+			position=2;
+			System.out.println("You are the right side");
+		}else if((PointX > bitirmeTarafXbas) 
+				&& (PointX < bitirmeTarafXbas+260)
+				&& (PointY > bitirmeTarafYbas) 
+				&& (PointY < bitirmeTarafYbas+100)) {
+			System.out.println("You are the middle side");
+			position=3;
+		}
+		else {
+			System.out.println("You are Outside");
+			position=0;
+		}
+		return position;
+	}
+
+
+
+
+	//Ama bu method calýsýnca sorun olmuyor
+	public void SagUsttekiTaslariGoster(int OyuncuIndex, int iTasIndex, Group root)
+	{
+		Stone stone;
+
+		//HOCAM BURADA ISLEM YAPMADAN ONCE BIZ ONCEKI TASLAR KISMINI BOSALTIYORMUSUZ ONDAN BURADA ISLEM YAPMIYOR INDEX HATASI VERIYOR 
+		//DropP2.get(0).setFill(Color.GRAY);
+		if(!(droptaslar.isEmpty()))
+		{
+			stone = droptaslar.get(iTasIndex);
+
+
+
+
+			//Bu methodta þuanki kullanýcýnýn tas atacagi alaný buluyorum.
+			ArrayList<Rectangle> DropSide=TargetArea(OyuncuIndex);
+			ArrayList<Rectangle> OncekiDropSide=TargetArea(OyuncuIndex-1);
+
+			stone.setXsutun(DropSide.get(iTasIndex).getX()+25);
+			stone.setYsatir(DropSide.get(iTasIndex).getY()+55);
+
+			stone.getTxt().setTranslateX(0);
+			stone.getTxt().setTranslateY(0);
+			DropSide.get(iTasIndex).setFill(Color.GRAY);
+			OncekiDropSide.get(iTasIndex).setFill(Color.GHOSTWHITE);
+			//root.getChildren().add(stone.getTxt());
+		}
+		else
+		{
+			System.out.println("It's empty");
+		}
+	}
+	//Oyuncunun tas atacagý alani seciyorum.
+	private ArrayList<Rectangle> TargetArea(int oyuncuIndex) {
+
+		switch(oyuncuIndex) {
+		case 0:
+			return DropP1;
+
+		case 1:
+			return DropP2;
+
+		case 2:		
+			return DropP3;
+
+		case 3:
+			return DropP4;
+
+
+		}
+		return null;
+	}
+	/*	public void coloring(int iOyuncuIndex, ArrayList<Stone> oyuncu_droptaslar, Group root) {
+		ArrayList<Rectangle> DropSide=TargetArea(iOyuncuIndex);
+		for(int a=0; a<oyuncu_droptaslar.size(); a++) {
+			oyuncu_droptaslar.get(a).setXsutun(DropSide.get(a).getX()+25);
+			oyuncu_droptaslar.get(a).setYsatir(DropSide.get(a).getY()+55);
+			oyuncu_droptaslar.get(a).getTxt().setTranslateX(0);
+			oyuncu_droptaslar.get(a).getTxt().setTranslateY(0);
+			root.getChildren().add(oyuncu_droptaslar.get(a).getTxt());
+		}
+
+	}*/
+	//Bu methodda oyuncu Id 2 oldugunda ariza veriyor oyuncu ID 1 ise sorun yok ama 1 dýsýndakilerde target areadan bos donuyor
+	//satýr 528
+	public void DroppedStone_Place(int a, int iOyuncuIndex, Group root) {
+		System.out.println(getOyuncuID());
+		//System.out.println(DropP2.get(0));
+		//ArrayList<Stone> thrower= droptaslar;
+		System.out.println("Sýkýntý sebebi");
+		System.out.println(iOyuncuIndex);
+		System.out.println(iOyuncuIndex-1);
+		System.out.println("________________________");
+
+
+
+
+		ArrayList<Rectangle> SagDropSide=TargetArea(iOyuncuIndex);
+		ArrayList<Rectangle> SolDropSide=TargetArea(iOyuncuIndex-1);
+
+		droptaslar.get(a).setXsutun(SagDropSide.get(a).getX()+25);
+		droptaslar.get(a).setYsatir(SagDropSide.get(a).getY()+55);
+		droptaslar.get(a).getTxt().setTranslateX(0);
+		droptaslar.get(a).getTxt().setTranslateY(0);
+		root.getChildren().add(droptaslar.get(a).getTxt());
+		//SagDropSide.get(a).setFill(Color.GRAY);
+		SolDropSide.get(a).setFill(Color.GHOSTWHITE); 
+
+		/*	
+			thrower.get(a).setXsutun(25 + 20*a);
+			thrower.get(a).setYsatir(55);
+			thrower.get(a).getTxt().setTranslateX(0);
+			thrower.get(a).getTxt().setTranslateY(0);
+
+		 */
+		//}
+		//}*/
+
+	}
+	public void PutIt(int hal, int a, Stone stone, Group root) {
+		ArrayList<Rectangle> p4drop=TargetArea(3);
+		Line putterline=woodliner.get(woodliner.size()-1-a);
+		stone.setXsutun(putterline.getStartX()+25);
+		stone.setYsatir(putterline.getStartY()+55);
+		stone.getTxt().setTranslateX(0);
+		stone.getTxt().setTranslateY(0);
+		putterline.setStroke(Color.RED);
+		DropP4.get(a).setFill(Color.GHOSTWHITE);
+
+		if(hal==0) {
+			root.getChildren().add(stone.getTxt());
+
+		}
+
+
+	}
+	public void ControlFinalPosition() {
+	//	Collections.sort(taslar, Stone.getValue());
+		Collections.sort(taslar, new Comparator<Stone>() {
+			public int compare(Stone s1, Stone s2) {
+			return	Integer.valueOf(s2.getValue()).compareTo(s1.getValue());
+			}
+			});
+		System.out.println("Sorted is");
+		for(Stone stone: taslar) {
+			System.out.println(stone.getTxt());
+		}
+		
+		// TODO Auto-generated method stub
+		
+	}
+
+
+}
+_________________________wood

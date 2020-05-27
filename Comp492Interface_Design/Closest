@@ -1,0 +1,19 @@
+	//System.out.println("this is="+Result);
+				/*
+				if(Result==false) {
+					Closest.setXsutun(Closest.getXsutun());
+					Closest.setYsatir(Closest.getYsatir());
+					Closest.getTxt().setTranslateX(0);
+					Closest.getTxt().setTranslateY(0);
+					Closest.getTxt();
+				}else {
+					Closest.setXsutun(prspointX);
+					Closest.setYsatir(prspointY);
+
+					Closest.getTxt().setTranslateX(0);
+					Closest.getTxt().setTranslateY(0);
+					Closest.getTxt().setX(prspointX);
+					Closest.getTxt().setY(prspointY);
+					Closest.getTxt();
+				}
+				*/
